@@ -1,0 +1,65 @@
+# Dependencies
+node_modules/
+.deps/
+
+# Build artifacts
+artifacts/
+cache/
+out/
+typechain/
+typechain-types/
+coverage/
+coverage.json
+lcov.info
+
+# Hardhat / Foundry
+cache_hardhat/
+cache_forge/
+broadcast/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+private/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# TypeScript / build
+dist/
+build/
+*.tsbuildinfo
+
+# Test / gas reports
+gasReporterOutput.json
+.gas-snapshot
+
+# Misc
+*.tgz
+.temp/
+.tmp/
