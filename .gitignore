@@ -63,3 +63,5 @@ gasReporterOutput.json
 *.tgz
 .temp/
 .tmp/
+
+scripts/
