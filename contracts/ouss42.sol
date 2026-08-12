@@ -8,6 +8,8 @@ contract OUSS42 is IERC20 {
     string private _symbol;
     uint8 private _decimals;
     uint256 private _totalSupply;
+    address public owner;
+
 
 
     mapping(address => uint256) private _balances;
@@ -17,12 +19,11 @@ contract OUSS42 is IERC20 {
       _name = "OUSS42";
       _symbol = "O42";
       _decimals = 18; 
+      owner = msg.sender;
 
-      // mint the whole token supply           
-      uint256 fixedSupply = 1000000;
-      _totalSupply += fixedSupply * (10 ** uint256(_decimals));
-      _balances[msg.sender] += _totalSupply;
-      emit Transfer(address(0), msg.sender, _totalSupply);
+      // minth the initial supply 1000000 token       
+      uint256 initialSupply = 1000000 * (10 ** uint256(_decimals));
+      mint(msg.sender, initialSupply);
     }
 
     function name() public view override returns (string memory) {
@@ -80,6 +81,21 @@ contract OUSS42 is IERC20 {
       emit Transfer(_from, _to, _value);
 
       return true;
+    }
+
+    function transferOwnership(address _newOwner) external override  {
+      require(msg.sender == owner, "Not authorized");
+      require(_newOwner != address(0), "Invalid address");
+      owner = _newOwner;
+    }
+    
+    function mint(address _to, uint256 _amount) public override  {
+      require(_to != address(0), "Mint to zero address");
+      require(msg.sender == owner, "Not authorized");
+
+      _balances[_to] += _amount;
+      _totalSupply += _amount;
+      emit Transfer(address(0), _to, _amount);
     }
 
 }
