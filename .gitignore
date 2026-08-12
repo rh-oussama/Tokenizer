@@ -64,3 +64,5 @@ gasReporterOutput.json
 .temp/
 .tmp/
 .states/
+
+config.json
