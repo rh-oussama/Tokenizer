@@ -1,21 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.6.12 <0.9.0;
 
-interface IERC20 {
-  function name() external view returns (string memory);
-  function symbol() external view returns (string memory);
-  function decimals() external view returns (uint8);
-  function totalSupply() external view returns (uint256);
-  function balanceOf(address _owner) external view returns (uint256 balance);
-  function allowance(address _owner, address _spender) external view returns (uint256 remaining);
-  function transfer(address _to, uint256 _value) external returns (bool success);
-  function transferFrom(address _from, address _to, uint256 _value) external returns (bool success);
-  function approve(address _spender, uint256 _value) external returns (bool success);
-
-  event Transfer(address indexed _from, address indexed _to, uint256 _value);
-  event Approval(address indexed _owner, address indexed _spender, uint256 _value);
-}
-
+import "./IERC20.sol";
 
 contract OUSS42 is IERC20 {
     string private _name;
@@ -36,6 +22,7 @@ contract OUSS42 is IERC20 {
       uint256 fixedSupply = 1000000;
       _totalSupply += fixedSupply * (10 ** uint256(_decimals));
       _balances[msg.sender] += _totalSupply;
+      emit Transfer(address(0), msg.sender, _totalSupply);
     }
 
     function name() public view override returns (string memory) {
@@ -73,7 +60,7 @@ contract OUSS42 is IERC20 {
       return _allowances[_owner][_spender];
     }
 
-    function approve(address _spender, uint256 _value) public returns (bool success) {
+    function approve(address _spender, uint256 _value) public override returns (bool success) {
       _allowances[msg.sender][_spender] = _value;
       emit Approval(msg.sender, _spender, _value);
       return true;
