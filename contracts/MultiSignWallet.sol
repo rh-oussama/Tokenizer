@@ -2,8 +2,8 @@
 pragma solidity >=0.6.12 <0.9.0;
 
 
-contract MultiSigOwners {
-
+contract MultiSignWallet {
+    
     address[] public owners = [
         0x65779450dF7c91530028d509676b24E94DD758D9,
         0x43E55Dc5D5f965CA4aC904da14c31bE2604A10d2,
@@ -24,10 +24,8 @@ contract MultiSigOwners {
         _;
     }
 
-}
 
 
-contract MultiSigWallet is MultiSigOwners{
 
     struct Transaction {
         address tokenAddress;
