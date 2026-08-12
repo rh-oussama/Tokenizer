@@ -1,93 +1,76 @@
 # Tokenizer
 
-Solidity contracts for an ERC-20 style token (**OUSS42**) and a multi-signature wallet that can control privileged token actions (mint, ownership transfer).
+Solidity project for an ERC-20 style token controlled by a multi-signature wallet.
 
-Built for use with [Remix IDE](https://remix.ethereum.org/).
+Use it with [Remix IDE](https://remix.ethereum.org/) and the scripts in `scripts/`.
+
+## What this project does
+
+1. **OUSS42** is a simple token (name `OUSS42`, symbol `O42`, 18 decimals).
+2. The deployer receives **1,000,000** tokens and is the initial **owner**.
+3. Only the owner can **mint** more tokens or **transfer ownership**.
+4. **MultiSignWallet** is a 2-of-3 multi-sig. After you transfer token ownership to it, minting needs **2 owner approvals** instead of one person alone.
 
 ## Contracts
 
-| File | Contract | Description |
-|------|----------|-------------|
-| `contracts/IERC20.sol` | `IERC20` | Token interface (standard ERC-20 + `mint` / `transferOwnership`) |
-| `contracts/ouss42.sol` | `OUSS42` | Fungible token implementation |
-| `contracts/MultiSigWallet.sol` | `MultiSigOwners`, `MultiSigWallet` | Multi-sig owners list and transaction wallet |
+| File | Role |
+|------|------|
+| `contracts/IERC20.sol` | Token interface (standard ERC-20 + `mint` / `transferOwnership`) |
+| `contracts/OUSS42.sol` | Token implementation |
+| `contracts/MultiSignWallet.sol` | Multi-sig wallet (3 owners, **2** required) |
 
-### OUSS42 token
+### Token (`OUSS42`)
 
-| Property | Value |
-|----------|--------|
-| Name | `OUSS42` |
-| Symbol | `O42` |
-| Decimals | `18` |
-| Initial supply | `1_000_000` tokens (minted to deployer) |
+- Anyone can use normal ERC-20 functions: `transfer`, `approve`, `transferFrom`, `balanceOf`, etc.
+- **Owner only:**
+  - `mint(to, amount)` — create new tokens
+  - `transferOwnership(newOwner)` — change who can mint
 
-**Main functions**
+### Multi-sig (`MultiSignWallet`)
 
-- Standard: `transfer`, `approve`, `transferFrom`, `balanceOf`, `allowance`, `totalSupply`
-- Privileged (owner only):
-  - `mint(address _to, uint256 _amount)` — mint new tokens
-  - `transferOwnership(address _newOwner)` — change token owner
-
-The deployer becomes `owner` and receives the initial supply.
-
-### MultiSigWallet
-
-A 2-of-3 multi-sig wallet. Hardcoded owners (2 approvals required to execute):
+Owners (hardcoded in the contract):
 
 1. `0x65779450dF7c91530028d509676b24E94DD758D9`
 2. `0x43E55Dc5D5f965CA4aC904da14c31bE2604A10d2`
 3. `0x3519b32Cd459f0eCA2a9BC331C2d33935C45262B`
 
-**Flow**
+How a multi-sig action works:
 
-1. **Submit** — an owner calls `submitTransaction(tokenAddress, data)` with the target contract and encoded call data.
-2. **Approve** — other owners call `approveTransaction(txId)` until `required` (2) approvals are reached.
-3. **Execute** — an owner calls `executeTransaction(txId)`, which runs the call on the token contract.
+1. An owner **submits** a transaction (target contract + calldata).
+2. Other owners **approve** it.
+3. When there are enough approvals (**2**), someone **executes** it.
 
-Typical use: transfer OUSS42 ownership to the multi-sig, then mint or change ownership only through approved multi-sig transactions.
+Example: submit a `mint(...)` call on the token, get 2 approvals, then execute.
 
-## Suggested setup
+## Scripts (Remix)
 
-1. Deploy **OUSS42** (deployer is the initial owner and holds the supply).
-2. Deploy **MultiSigWallet**.
-3. From the token owner, call:
-   ```text
-   transferOwnership(<MultiSigWallet address>)
-   ```
-4. To mint via multi-sig:
-   - Encode a call to `mint(to, amount)` (e.g. with Remix “At Address” / ABI encoder or `cast calldata`).
-   - `submitTransaction` with the OUSS42 address and that calldata.
-   - Get 2 owner approvals, then `executeTransaction`.
+Run these from Remix after connecting MetaMask (e.g. Sepolia).
 
-### Example calldata (mint)
+| Script | Purpose |
+|--------|---------|
+| `scripts/deploy.ts` | Compile and deploy **OUSS42**, save address to `config.json` |
+| `scripts/deploy_bonus.ts` | Compile and deploy **MultiSignWallet**, save address to `config.json` |
+| `scripts/transfer_ownership.ts` | Transfer token ownership to the multi-sig address in `config.json` |
+| `scripts/mint_multisign.ts` | Encode mint + submit / use multi-sig to mint |
 
-Using [Foundry](https://book.getfoundry.sh/) `cast` (optional):
+`config.json` holds deployed addresses used by the later scripts:
 
-```bash
-cast calldata "mint(address,uint256)" 0xRecipientAddress 1000000000000000000
-```
+- `tokenAddress`
+- `multisignAddress`
+- deployer addresses
 
-That encodes minting `1` full token (18 decimals).
+## Suggested order
 
-## Project layout
-
-```text
-Tokenizer/
-├── contracts/
-│   ├── IERC20.sol
-│   ├── ouss42.sol
-│   └── MultiSigWallet.sol
-├── remix.config.json
-└── README.md
-```
-
-Local Remix VM state is ignored (`.states/`). Build artifacts are also ignored.
+1. Run `deploy.ts` → token is live.
+2. Run `deploy_bonus.ts` → multi-sig is live.
+3. Run `transfer_ownership.ts` → multi-sig becomes token owner.
+4. Run `mint_multisign.ts` (and collect approvals as needed) to mint under multi-sig control.
 
 ## Requirements
 
 - Solidity `>=0.6.12 <0.9.0`
-- Remix (or any toolchain that compiles/deploys these contracts)
+- Remix + MetaMask (or another wallet provider in Remix)
 
 ## License
 
-Contracts use the MIT license (`SPDX-License-Identifier: MIT`).
+MIT (`SPDX-License-Identifier: MIT` on the contracts)
